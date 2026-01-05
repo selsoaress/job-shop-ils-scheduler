@@ -1,112 +1,52 @@
-## Problema de Escalonamento Job Shop (Job Shop Scheduling Problem – JSSP)
+## Job Shop Scheduling Problem
 
-O **Job Shop Scheduling Problem (JSSP)** é um problema clássico de otimização combinatória cujo objetivo é programar a execução de um conjunto de tarefas em máquinas limitadas, respeitando restrições tecnológicas e de capacidade.
+Este projeto trata do **Job Shop Scheduling Problem (JSSP)**, um problema clássico de otimização combinatória cujo objetivo é definir a ordem de execução de operações em máquinas limitadas, respeitando restrições tecnológicas e de capacidade.
 
-### Definição formal
-
-- Temos um conjunto de **jobs** \( J = \{1, \dots, n\} \).
-- Cada job \( j \) é composto por uma sequência ordenada de **operações**  
-  \[
-  O_{j1}, O_{j2}, \dots, O_{j m_j}
-  \]
-- Cada operação:
-  - Deve ser processada em **uma máquina específica**;
-  - Possui um **tempo de processamento** conhecido;
-  - Não pode ser interrompida (sem preempção).
-- Cada máquina:
-  - Pode processar **apenas uma operação por vez**.
-
-### Objetivo clássico
-
-O objetivo mais comum é minimizar o **makespan**, isto é, o tempo total necessário para completar todos os jobs:
-\[
-\min C_{\max}
-\]
+Cada job é composto por uma sequência fixa de operações. Cada operação deve ser processada em uma máquina específica, possui um tempo de processamento conhecido e não pode ser interrompida. Cada máquina pode processar apenas uma operação por vez. O objetivo considerado é minimizar o tempo total de conclusão do escalonamento (makespan).
 
 ---
 
-## Modelagem via Grafo Direcionado Acíclico (DAG)
+## Modelagem por grafo
 
-Uma forma poderosa de representar o JSSP é por meio de um **grafo direcionado acíclico**, que explicita as dependências temporais entre as operações.
+O problema é modelado por meio de um **grafo direcionado acíclico (DAG)**. Cada operação é representada por um nó, e as dependências temporais entre operações são representadas por arestas direcionadas.
 
-### Nós do grafo
+Existem dois tipos de dependências no grafo. O primeiro tipo corresponde às **restrições tecnológicas**, que impõem a ordem fixa das operações dentro de um mesmo job. Essas dependências são obrigatórias e independem do escalonamento adotado.
 
-- Cada **nó** representa uma operação \( O_{jk} \).
-- Opcionalmente, adiciona-se:
-  - Um nó **fonte** (início);
-  - Um nó **sorvedouro** (fim).
+O segundo tipo corresponde aos **conflitos de máquina**. Operações que utilizam a mesma máquina não podem ser executadas simultaneamente, sendo necessário decidir uma ordem de processamento entre elas. Essas decisões definem a orientação das arestas de máquina e caracterizam uma solução específica do problema.
 
----
-
-### Arestas do grafo
-
-Existem dois tipos principais de arestas:
-
-#### 1. Arestas de precedência tecnológica (fixas)
-
-Representam a ordem interna de cada job.
-
-Se a operação \( O_{jk} \) deve ocorrer antes de \( O_{j(k+1)} \), então:
-\[
-O_{jk} \rightarrow O_{j(k+1)}
-\]
-
-Essas arestas são **obrigatórias** e sempre presentes no grafo.
+Para que um escalonamento seja viável, o grafo resultante deve ser acíclico. A presença de ciclos indica uma inconsistência temporal e torna a solução inviável.
 
 ---
 
-#### 2. Arestas de conflito de máquina (decisórias)
+## Avaliação da solução
 
-Representam a ordem entre operações que competem pela **mesma máquina**.
-
-Se duas operações \( O_a \) e \( O_b \) usam a mesma máquina, então **uma deve preceder a outra**, mas essa ordem é uma **decisão de escalonamento**:
-
-- Ou: \( O_a \rightarrow O_b \)
-- Ou: \( O_b \rightarrow O_a \)
-
-A escolha dessas arestas define uma solução específica do problema.
+Uma vez construído o grafo, o makespan é obtido a partir do caminho crítico, isto é, o maior caminho no DAG considerando os tempos de processamento das operações. Esse valor é utilizado como critério de avaliação das soluções.
 
 ---
 
-## Aciclicidade e viabilidade
+## Construção inicial
 
-- O grafo completo (precedência + conflitos de máquina) **deve ser acíclico**.
-- Um ciclo no grafo implica uma **inconsistência temporal**, ou seja, uma solução inviável.
-- Assim:
-  - **Toda solução viável do JSSP corresponde a um DAG**
-  - **Todo DAG válido induz um escalonamento viável**
+A solução inicial é construída por uma heurística gulosa baseada na regra **SPT (Shortest Processing Time)**. Em cada máquina, as operações disponíveis são ordenadas de acordo com o menor tempo de processamento, respeitando sempre as restrições de precedência dos jobs. Essa etapa gera um escalonamento inicial viável.
 
 ---
 
-## Avaliação do makespan via caminho crítico
+## Busca local
 
-Uma vez construído o DAG:
-
-- Atribui-se a cada nó um peso igual ao tempo de processamento da operação.
-- O **makespan** é dado pelo **comprimento do maior caminho da fonte ao sorvedouro**:
-\[
-C_{\max} = \max_{\text{caminhos}} \sum \text{tempos das operações}
-\]
-
-Esse cálculo equivale a encontrar o **caminho crítico** no DAG.
+A busca local utiliza como movimento básico a troca de **operações adjacentes em uma mesma máquina**. Após o swap, é realizado um ajuste ao longo da cadeia produtiva do job, garantindo que a ordem das operações seja preservada e que o grafo permaneça acíclico.
 
 ---
 
-## Por que essa modelagem é importante?
+## Perturbação
 
-- Permite:
-  - Avaliar rapidamente soluções via caminho crítico;
-  - Detectar inviabilidade por ciclos;
-  - Aplicar heurísticas e metaheurísticas (ILS, tabu, SA, etc.) como **modificações locais nas arestas de máquina**.
-- É a base de várias abordagens clássicas:
-  - Shifting Bottleneck
-  - Busca local por reversão de arcos
-  - Modelagens híbridas com programação matemática
+A etapa de perturbação consiste na troca de **operações não consecutivas em uma mesma máquina**. Esse movimento promove alterações mais intensas no escalonamento e tem como objetivo permitir a saída de ótimos locais. Após a perturbação, o escalonamento é novamente ajustado para restaurar a viabilidade.
 
 ---
 
-## Intuição resumida
+## Visão geral da abordagem
 
-> Escalonar um job shop é escolher orientações para os conflitos de máquina  
-> de modo que o grafo resultante seja acíclico  
-> e tenha o menor caminho crítico possível.
+De forma resumida, a abordagem adotada neste projeto segue os seguintes passos:
+
+- construção inicial gulosa via SPT;
+- exploração do espaço de soluções por swaps em máquinas;
+- ajustes para garantir viabilidade do grafo;
+- avaliação das soluções por meio do caminho crítico.
