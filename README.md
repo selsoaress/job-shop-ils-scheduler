@@ -1,52 +1,52 @@
-## Job Shop Scheduling Problem
+## Job Shop Scheduling Problem (JSSP)
 
-Este projeto trata do **Job Shop Scheduling Problem (JSSP)**, um problema clássico de otimização combinatória cujo objetivo é definir a ordem de execução de operações em máquinas limitadas, respeitando restrições tecnológicas e de capacidade.
+This project addresses the **Job Shop Scheduling Problem (JSSP)**, a classic combinatorial optimization challenge. The goal is to determine the execution sequence of operations on limited machines, respecting both technological and capacity constraints.
 
-Cada job é composto por uma sequência fixa de operações. Cada operação deve ser processada em uma máquina específica, possui um tempo de processamento conhecido e não pode ser interrompida. Cada máquina pode processar apenas uma operação por vez. O objetivo considerado é minimizar o tempo total de conclusão do escalonamento (makespan).
-
----
-
-## Modelagem por grafo
-
-O problema é modelado por meio de um **grafo direcionado acíclico (DAG)**. Cada operação é representada por um nó, e as dependências temporais entre operações são representadas por arestas direcionadas.
-
-Existem dois tipos de dependências no grafo. O primeiro tipo corresponde às **restrições tecnológicas**, que impõem a ordem fixa das operações dentro de um mesmo job. Essas dependências são obrigatórias e independem do escalonamento adotado.
-
-O segundo tipo corresponde aos **conflitos de máquina**. Operações que utilizam a mesma máquina não podem ser executadas simultaneamente, sendo necessário decidir uma ordem de processamento entre elas. Essas decisões definem a orientação das arestas de máquina e caracterizam uma solução específica do problema.
-
-Para que um escalonamento seja viável, o grafo resultante deve ser acíclico. A presença de ciclos indica uma inconsistência temporal e torna a solução inviável.
+Each job consists of a fixed sequence of operations. Each operation must be processed on a specific machine, has a known processing time, and is non-preemptive (cannot be interrupted). Each machine can process only one operation at a time. The primary objective is to minimize the total completion time, also known as the **makespan**.
 
 ---
 
-## Avaliação da solução
+## Graph Modeling
 
-Uma vez construído o grafo, o makespan é obtido a partir do caminho crítico, isto é, o maior caminho no DAG considerando os tempos de processamento das operações. Esse valor é utilizado como critério de avaliação das soluções.
+The problem is modeled using a **Directed Acyclic Graph (DAG)**. Each operation is represented by a node, and the temporal dependencies between operations are represented by directed edges.
 
----
+There are two types of dependencies in the graph:
+1. **Technological Constraints**: These impose a fixed order of operations within the same job. These dependencies are mandatory and independent of the chosen schedule.
+2. **Machine Conflicts**: Operations that share the same machine cannot be executed simultaneously, requiring a decision on their processing order. These decisions define the orientation of the "machine edges" and characterize a specific solution.
 
-## Construção inicial
-
-A solução inicial é construída por uma heurística gulosa baseada na regra **SPT (Shortest Processing Time)**. Em cada máquina, as operações disponíveis são ordenadas de acordo com o menor tempo de processamento, respeitando sempre as restrições de precedência dos jobs. Essa etapa gera um escalonamento inicial viável.
-
----
-
-## Busca local
-
-A busca local utiliza como movimento básico a troca de **operações adjacentes em uma mesma máquina**. Após o swap, é realizado um ajuste ao longo da cadeia produtiva do job, garantindo que a ordem das operações seja preservada e que o grafo permaneça acíclico.
+For a schedule to be feasible, the resulting graph must be acyclic. The presence of cycles indicates a temporal inconsistency, rendering the solution invalid.
 
 ---
 
-## Perturbação
+## Solution Evaluation
 
-A etapa de perturbação consiste na troca de **operações não consecutivas em uma mesma máquina**. Esse movimento promove alterações mais intensas no escalonamento e tem como objetivo permitir a saída de ótimos locais. Após a perturbação, o escalonamento é novamente ajustado para restaurar a viabilidade.
+Once the graph is constructed, the makespan is determined by the **critical path**—the longest path in the DAG considering the processing times of the operations. This value is used as the primary fitness criterion for evaluating solutions.
 
 ---
 
-## Visão geral da abordagem
+## Initial Construction
 
-De forma resumida, a abordagem adotada neste projeto segue os seguintes passos:
+The initial solution is built using a greedy heuristic based on the **SPT (Shortest Processing Time)** rule. On each machine, available operations are ordered according to the shortest processing time while respecting job precedence constraints. This step ensures the generation of an initial feasible schedule.
 
-- construção inicial gulosa via SPT;
-- exploração do espaço de soluções por swaps em máquinas;
-- ajustes para garantir viabilidade do grafo;
-- avaliação das soluções por meio do caminho crítico.
+---
+
+## Local Search
+
+The local search utilizes a basic move: the **swap of adjacent operations on the same machine**. After a swap, adjustments are made along the job's production chain to ensure that the operation sequence is preserved and the graph remains acyclic.
+
+---
+
+## Perturbation
+
+The perturbation stage involves swapping **non-consecutive operations on the same machine**. This move introduces more significant changes to the schedule, aiming to escape local optima. Following perturbation, the schedule is readjusted to restore feasibility.
+
+---
+
+## Approach Overview
+
+In summary, the approach adopted in this project follows these steps:
+
+* Initial greedy construction via the **SPT** rule;
+* Exploration of the solution space through **machine swaps**;
+* Adjustments to guarantee **graph feasibility**;
+* Solution evaluation via the **critical path**.
